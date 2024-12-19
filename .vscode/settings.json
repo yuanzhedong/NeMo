@@ -1,0 +1,47 @@
+// VSCode workspace settings for modelopt
+{
+    "editor.rulers": [
+        100
+    ], // 100 for auto-formatter, 120 for hard limit in ruff
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit"
+        },
+    },
+    "ruff.lint.args": [], // config file should be used
+    "files.exclude": {
+        "build": true,
+    },
+    "files.watcherExclude": {
+        ".ipynb_checkpoints": true,
+        ".mypy_cache": true,
+        ".pytest_cache": true,
+        ".ruff_cache": true,
+        ".tox": true,
+        "**/__pycache__/**": true,
+        "**/*.pyc": true,
+        "**/runs": true,
+        "build": true
+    },
+    "[yaml]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+    },
+    "yaml.format.enable": true,
+    "yaml.format.printWidth": 150,
+    "yaml.format.bracketSpacing": false,
+    "yaml.customTags": [
+        "!reference sequence"
+    ],
+    "python.testing.pytestEnabled": true,
+    // TODO: VSCode is going to support error-tolerant pytest discovery in the near future:
+    // https://code.visualstudio.com/updates/v1_81#_python
+    // When that happens, we can remove the --ignore-glob flag and the gpu tests will be skipped
+    "python.testing.pytestArgs": [
+        "./tests",
+        "--no-cov",
+    ],
+    "evenBetterToml.schema.enabled": false,
+    "cmake.configureOnOpen": false, // disable toml/json schema since we have custom fields
+}

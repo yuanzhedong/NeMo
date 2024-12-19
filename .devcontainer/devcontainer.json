@@ -1,0 +1,49 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "NeMo Dev Docker",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"build": {
+		// Path is relative to the devcontainer.json file.
+		"dockerfile": "../Dockerfile.dev"
+	},
+	"runArgs": [
+		"--gpus",
+		"\"device=0,1\"",
+		"--net",
+		"host",
+		"--shm-size=2g",
+		"--ulimit",
+		"memlock=-1",
+		"--ulimit",
+		"stack=67108864"
+	],
+	"mounts": [
+		"source=autodeploy-vscode-bashhistory,target=/commandhistory,type=volume", // persistent bash history
+		"source=${localEnv:HOME}/.cache/huggingface,target=/home/ubuntu/.cache/huggingface,type=bind" // HF cache
+	],
+	"workspaceMount": "source=${localWorkspaceFolder},target=/opt/NeMo,type=bind",
+	"workspaceFolder": "/opt/NeMo",
+	"postCreateCommand": "",
+	"remoteUser": "ubuntu",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"ms-azuretools.vscode-docker",
+				"tamasfe.even-better-toml",
+				"GitLab.gitlab-workflow",
+				"eamodio.gitlens",
+				"VisualStudioExptTeam.vscodeintellicode",
+				"ms-toolsai.jupyter",
+				"ms-python.vscode-pylance",
+				"ms-python.python",
+				"charliermarsh.ruff",
+				"redhat.vscode-yaml"
+			],
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/bin/python"
+			}
+		}
+	}
+}

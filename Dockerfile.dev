@@ -1,0 +1,71 @@
+ARG BASE_IMAGE=nvcr.io/nvidian/nemo:24.09.rc1
+ARG IMAGE_LABEL
+FROM ${BASE_IMAGE}
+
+
+
+# Update and install sudo with non-interactive resolution
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo
+
+# Pre-configure dpkg to keep the current /etc/sudoers file
+RUN echo "sudo    sudoers/literal    boolean true" | debconf-set-selections
+
+# Add the 'ubuntu' user and set up a home directory
+RUN useradd -m -s /bin/bash ubuntu \
+    && echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+
+ARG USERNAME=ubuntu
+WORKDIR /home/$USERNAME
+# Add sudo support for available ubuntu user in the docker (UID 1000)
+# Also install zsh, oh-my-zsh
+RUN apt-get update \
+    && apt-get install -y \
+    sudo \
+    zsh \
+    git \
+    curl
+
+
+# Ensure path contains local bin folder of user
+ENV PATH="/home/$USERNAME/.local/bin:$PATH"
+
+# Ensure that .cache folder is created and owned by the user
+RUN mkdir -p /home/$USERNAME/.cache \
+    && sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/.cache
+
+# Set up directories and files for persistent bash/zsh history
+RUN mkdir /commandhistory \
+    && touch /commandhistory/.bash_history \
+    && touch /commandhistory/.zsh_history \
+    && sudo chown -R $USERNAME:$USERNAME /commandhistory
+
+# run as local user that will be used in the dev container
+USER $USERNAME
+
+# setup oh-my-zsh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
+    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.oh-my-zsh
+
+# setup zsh and \bash history tracking
+RUN printf '# History file\n' \
+    'export HISTFILE=/commandhistory/.zsh_history\n' \
+    'export HISTSIZE=10000\n' \
+    'export SAVEHIST=10000\n' \
+    'setopt APPEND_HISTORY SHARE_HISTORY INC_APPEND_HISTORY HIST_IGNORE_DUPS HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_FIND_NO_DUPS\n' \
+    >> /home/${USERNAME}/.zshrc && \
+    printf '# History file\n' \
+    'export HISTFILE=/commandhistory/.bash_history\n' \
+    'export HISTSIZE=10000\n' \
+    'export HISTFILESIZE=10000\n' \
+    'shopt -s histappend\n' \
+    'PROMPT_COMMAND="history -a; history -n"\n' \
+    >> /home/${USERNAME}/.bashrc
+
+# switch back to correct workspace and set root as default user again
+RUN pip install lightning
+WORKDIR /opt/NeMo
+USER root
+
+
+
